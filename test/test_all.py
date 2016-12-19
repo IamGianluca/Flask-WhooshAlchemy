@@ -11,7 +11,7 @@
 
 '''
 
-from __future__ import absolute_import
+
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -92,11 +92,11 @@ class Tests(TestCase):
         db.drop_all()
 
     def test_all(self):
-        title1 = u'a slightly long title'
-        title2 = u'another title'
-        title3 = u'wow another title'
+        title1 = 'a slightly long title'
+        title2 = 'another title'
+        title3 = 'wow another title'
 
-        obj = ObjectA(title=u'title', blurb='this is a blurb')
+        obj = ObjectA(title='title', blurb='this is a blurb')
         db.session.add(obj)
         db.session.commit()
 
@@ -104,32 +104,32 @@ class Tests(TestCase):
         db.session.delete(obj)
         db.session.commit()
 
-        db.session.add(ObjectA(title=title1, content=u'hello world', ignored=u'no match'))
+        db.session.add(ObjectA(title=title1, content='hello world', ignored='no match'))
         db.session.commit()
 
         self.assertEqual(len(list(ObjectA.query.whoosh_search('what'))), 0)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'no match'))), 0)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'title'))), 1)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'hello'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('no match'))), 0)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('title'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('hello'))), 1)
 
-        db.session.add(ObjectB(title=u'my title', content=u'hello world'))
+        db.session.add(ObjectB(title='my title', content='hello world'))
         db.session.commit()
 
         # make sure does not interfere with ObjectA's results
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'what'))), 0)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'title'))), 1)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'hello'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('what'))), 0)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('title'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('hello'))), 1)
 
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'what'))), 0)
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'title'))), 1)
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'hello'))), 1)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('what'))), 0)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('title'))), 1)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('hello'))), 1)
 
-        obj2 = ObjectA(title=title2, content=u'a different message')
+        obj2 = ObjectA(title=title2, content='a different message')
         db.session.add(obj2)
         db.session.commit()
 
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'what'))), 0)
-        l = list(ObjectA.query.whoosh_search(u'title'))
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('what'))), 0)
+        l = list(ObjectA.query.whoosh_search('title'))
         self.assertEqual(len(l), 2)
 
         # ranking should always be as follows, since title2 should have a higher relevance score
@@ -137,18 +137,18 @@ class Tests(TestCase):
         self.assertEqual(l[0].title, title2)
         self.assertEqual(l[1].title, title1)
 
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'hello'))), 1)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'message'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('hello'))), 1)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('message'))), 1)
 
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'what'))), 0)
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'title'))), 1)
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'hello'))), 1)
-        self.assertEqual(len(list(ObjectB.query.whoosh_search(u'message'))), 0)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('what'))), 0)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('title'))), 1)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('hello'))), 1)
+        self.assertEqual(len(list(ObjectB.query.whoosh_search('message'))), 0)
 
-        db.session.add(ObjectA(title=title3, content=u'a different message'))
+        db.session.add(ObjectA(title=title3, content='a different message'))
         db.session.commit()
 
-        l = list(ObjectA.query.whoosh_search(u'title'))
+        l = list(ObjectA.query.whoosh_search('title'))
         self.assertEqual(len(l), 3)
         self.assertEqual(l[0].title, title2)
         self.assertEqual(l[1].title, title3)
@@ -157,21 +157,21 @@ class Tests(TestCase):
         db.session.delete(obj2)
         db.session.commit()
 
-        l = list(ObjectA.query.whoosh_search(u'title'))
+        l = list(ObjectA.query.whoosh_search('title'))
         self.assertEqual(len(l), 2)
         self.assertEqual(l[0].title, title3)
         self.assertEqual(l[1].title, title1)
 
         two_days_ago = datetime.date.today() - datetime.timedelta(2)
 
-        title4 = u'a title that is significantly longer than the others'
+        title4 = 'a title that is significantly longer than the others'
 
         db.session.add(ObjectA(title=title4, created=two_days_ago))
         db.session.commit()
 
         one_day_ago = datetime.date.today() - datetime.timedelta(1)
 
-        recent = list(ObjectA.query.whoosh_search(u'title')
+        recent = list(ObjectA.query.whoosh_search('title')
                 .filter(ObjectA.created >= one_day_ago))
 
         self.assertEqual(len(recent), 2)
@@ -180,7 +180,7 @@ class Tests(TestCase):
 
         three_days_ago = datetime.date.today() - datetime.timedelta(3)
 
-        l = list(ObjectA.query.whoosh_search(u'title')
+        l = list(ObjectA.query.whoosh_search('title')
                 .filter(ObjectA.created >= three_days_ago))
 
         self.assertEqual(len(l), 3)
@@ -188,12 +188,12 @@ class Tests(TestCase):
         self.assertEqual(l[1].title, title1)
         self.assertEqual(l[2].title, title4)
 
-        title5 = u'title with title as frequent title word'
+        title5 = 'title with title as frequent title word'
 
         db.session.add(ObjectA(title=title5))
         db.session.commit()
 
-        l = list(ObjectA.query.whoosh_search(u'title'))
+        l = list(ObjectA.query.whoosh_search('title'))
         self.assertEqual(len(l), 4)
         self.assertEqual(l[0].title, title5)
         self.assertEqual(l[1].title, title3)
@@ -201,7 +201,7 @@ class Tests(TestCase):
         self.assertEqual(l[3].title, title4)
 
         # test limit
-        l = list(ObjectA.query.whoosh_search(u'title', limit=2))
+        l = list(ObjectA.query.whoosh_search('title', limit=2))
         self.assertEqual(len(l), 2)
         self.assertEqual(l[0].title, title5)
         self.assertEqual(l[1].title, title3)
@@ -212,77 +212,77 @@ class Tests(TestCase):
         db.drop_all()
         db.create_all()
 
-        title1 = u'my title'
-        db.session.add(ObjectA(title=title1, content=u'hello world'))
+        title1 = 'my title'
+        db.session.add(ObjectA(title=title1, content='hello world'))
         db.session.commit()
 
-        l = list(ObjectA.query.whoosh_search(u'title'))
+        l = list(ObjectA.query.whoosh_search('title'))
         self.assertEqual(len(l), 1)
 
-        l = list(ObjectA.query.whoosh_search(u'hello'))
+        l = list(ObjectA.query.whoosh_search('hello'))
         self.assertEqual(len(l), 1)
 
-        l = list(ObjectA.query.whoosh_search(u'title', fields=('title',)))
+        l = list(ObjectA.query.whoosh_search('title', fields=('title',)))
         self.assertEqual(len(l), 1)
-        l = list(ObjectA.query.whoosh_search(u'hello', fields=('title',)))
+        l = list(ObjectA.query.whoosh_search('hello', fields=('title',)))
         self.assertEqual(len(l), 0)
 
-        l = list(ObjectA.query.whoosh_search(u'title', fields=('content',)))
+        l = list(ObjectA.query.whoosh_search('title', fields=('content',)))
         self.assertEqual(len(l), 0)
-        l = list(ObjectA.query.whoosh_search(u'hello', fields=('content',)))
+        l = list(ObjectA.query.whoosh_search('hello', fields=('content',)))
         self.assertEqual(len(l), 1)
 
-        l = list(ObjectA.query.whoosh_search(u'hello dude', fields=('content',), or_=True))
+        l = list(ObjectA.query.whoosh_search('hello dude', fields=('content',), or_=True))
         self.assertEqual(len(l), 1)
 
-        l = list(ObjectA.query.whoosh_search(u'hello dude', fields=('content',), or_=False))
+        l = list(ObjectA.query.whoosh_search('hello dude', fields=('content',), or_=False))
         self.assertEqual(len(l), 0)
 
         # new function: test chaining
         db.drop_all()
         db.create_all()
 
-        db.session.add(ObjectA(title=u'title one', content=u'a poem'))
-        db.session.add(ObjectA(title=u'title two', content=u'about testing'))
-        db.session.add(ObjectA(title=u'title three', content=u'is delightfully tested'))
-        db.session.add(ObjectA(title=u'four', content=u'tests'))
+        db.session.add(ObjectA(title='title one', content='a poem'))
+        db.session.add(ObjectA(title='title two', content='about testing'))
+        db.session.add(ObjectA(title='title three', content='is delightfully tested'))
+        db.session.add(ObjectA(title='four', content='tests'))
         db.session.commit()
 
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'title'))), 3)
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'test'))), 3)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('title'))), 3)
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('test'))), 3)
 
         # chained query, operates as AND
-        self.assertEqual(len(list(ObjectA.query.whoosh_search(u'title').whoosh_search(u'test'))),
+        self.assertEqual(len(list(ObjectA.query.whoosh_search('title').whoosh_search('test'))),
                 2)
 
 
     def test_invalid_attribute(self):
-        db.session.add(ObjectC(title=u'my title', content=u'hello world'))
+        db.session.add(ObjectC(title='my title', content='hello world'))
         self.assertRaises(AttributeError, db.session.commit)
 
     def test_default_analyzer(self):
-        db.session.add(ObjectA(title=u'jumping', content=u''))
+        db.session.add(ObjectA(title='jumping', content=''))
         db.session.commit()
-        assert ['jumping'] == [obj.title for obj in ObjectA.query.whoosh_search(u'jump')]
+        assert ['jumping'] == [obj.title for obj in ObjectA.query.whoosh_search('jump')]
 
     def test_custom_analyzer(self):
         from whoosh.analysis import SimpleAnalyzer
         self.app.config['WHOOSH_ANALYZER'] = SimpleAnalyzer()
         db.init_app(self.app)
         db.create_all()
-        db.session.add(ObjectA(title=u'jumping', content=u''))
+        db.session.add(ObjectA(title='jumping', content=''))
         db.session.commit()
-        assert not list(ObjectA.query.whoosh_search(u'jump'))
-        assert ['jumping'] == [obj.title for obj in ObjectA.query.whoosh_search(u'jumping')]
+        assert not list(ObjectA.query.whoosh_search('jump'))
+        assert ['jumping'] == [obj.title for obj in ObjectA.query.whoosh_search('jumping')]
 
-        db.session.add(ObjectD(title=u'Travelling', content=u'Stemming'))
-        db.session.add(ObjectD(title=u'travel', content=u'Unstemmed and normal'))
-        db.session.add(ObjectD(title=u'trevel', content=u'Mispelt'))
+        db.session.add(ObjectD(title='Travelling', content='Stemming'))
+        db.session.add(ObjectD(title='travel', content='Unstemmed and normal'))
+        db.session.add(ObjectD(title='trevel', content='Mispelt'))
         
         db.session.commit()
         # When mispelt on either the indexed side or the query side, they should all return 3 due to the DoubleMetaphoneFilter
         self.assertEqual(len(list(ObjectD.query.whoosh_search('travelling'))), 3)
-        self.assertEquals(len(list(ObjectD.query.whoosh_search('trovel'))), 3)
+        self.assertEqual(len(list(ObjectD.query.whoosh_search('trovel'))), 3)
 
 
 if __name__ == '__main__':

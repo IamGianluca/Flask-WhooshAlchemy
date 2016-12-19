@@ -11,8 +11,8 @@
 
 '''
 
-from __future__ import with_statement
-from __future__ import absolute_import
+
+
 
 
 import flask_sqlalchemy as flask_sqlalchemy
@@ -37,9 +37,9 @@ __searchable__ = '__searchable__'
 DEFAULT_WHOOSH_INDEX_NAME = 'whoosh_index'
 
 try:
-    unicode
+    str
 except NameError:
-    unicode = str
+    str = str
 
 class _QueryProxy(flask_sqlalchemy.BaseQuery):
     # We're replacing the model's ``query`` field with this proxy. The main
@@ -75,7 +75,7 @@ class _QueryProxy(flask_sqlalchemy.BaseQuery):
             # Whoosh
 
             heapq.heappush(ordered_by_whoosh_rank,
-                (self._whoosh_rank[unicode(getattr(row,
+                (self._whoosh_rank[str(getattr(row,
                     self._primary_key_name))], row))
 
         def _inner():
@@ -104,8 +104,8 @@ class _QueryProxy(flask_sqlalchemy.BaseQuery):
 
         '''
 
-        if not isinstance(query, unicode):
-            query = unicode(query)
+        if not isinstance(query, str):
+            query = str(query)
 
         results = self._whoosh_searcher(query, limit, fields, or_)
 
@@ -251,7 +251,7 @@ def _after_flush(app, changes):
             bytype.setdefault(change[0].__class__.__name__, []).append((update,
                 change[0]))
 
-    for model, values in bytype.items():
+    for model, values in list(bytype.items()):
         index = whoosh_index(app, values[0][1].__class__)
         with index.writer() as writer:
             primary_field = values[0][1].pure_whoosh.primary_key_name
@@ -262,15 +262,15 @@ def _after_flush(app, changes):
                     attrs = {}
                     for key in searchable:
                         try:
-                            attrs[key] = unicode(getattr(v, key))
+                            attrs[key] = str(getattr(v, key))
                         except AttributeError:
                             raise AttributeError('{0} does not have {1} field {2}'
                                     .format(model, __searchable__, key))
 
-                    attrs[primary_field] = unicode(getattr(v, primary_field))
+                    attrs[primary_field] = str(getattr(v, primary_field))
                     writer.update_document(**attrs)
                 else:
-                    writer.delete_by_term(primary_field, unicode(getattr(v,
+                    writer.delete_by_term(primary_field, str(getattr(v,
                         primary_field)))
 
 
